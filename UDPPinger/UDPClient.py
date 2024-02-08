@@ -3,7 +3,7 @@ import time
 
 server_nameport = ('127.0.0.1', 12000)
 client_socket = socket(AF_INET, SOCK_DGRAM)
-client_socket.settimeout(5)
+client_socket.settimeout(1)
 sequence_number = 0
 while sequence_number < 10:
     time_sent = time.time()
