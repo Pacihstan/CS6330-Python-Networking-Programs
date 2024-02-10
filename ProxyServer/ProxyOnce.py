@@ -1,7 +1,7 @@
-from socket import *
+from socket import socket, AF_INET, SOCK_STREAM
 
 tcpSerSock = socket(AF_INET, SOCK_STREAM)
-tcpSerSock.bind(('',8888))
+tcpSerSock.bind(('', 8888))
 tcpSerSock.listen(5)
 
 for i in range(5):
@@ -13,37 +13,44 @@ for i in range(5):
         print(message)
     except:
         print('#failed to decode message')
+        continue
 
-    #extract filename
-    try: 
+    # Extract filename
+    try:
         print(message.split()[1])
-        filename = str(message.split()[1]).replace('http://','')
+        filename = message.split()[1].split("/")[1]
         print('successfully split message')
     except:
         print('#Failed to split message')
         filename = ''
-    print('Filename:'+filename)
-    filetouse = "/" + filename
-    print(filetouse)
+    print('Filename:' + filename)
+
     c = socket(AF_INET, SOCK_STREAM)
-    hostn = filename.replace("www.","",1)
+    hostn = filename.replace("www.", "", 1)
     print('Hostname: ' + hostn)
-    c.connect((hostn,80))
-    #fix here so that transport endpoint is open
+    c.connect((hostn, 80))
 
+    # Formulate and send HTTP request
+    request = "GET /" + filename + " HTTP/1.1\r\nHost: " + hostn + "\r\n\r\n"
+    c.sendall(request.encode())
 
+    # Receive and process HTTP response
+    response = b""
+    while True:
+        data = c.recv(1024)
+        if not data:
+            break
+        response += data
 
+    # Send response to client
+    tcpCliSock.sendall(response)
 
-    fileobj = c.makefile('wrb', None)
-    fileobj.write(b"GET  "+b"http://"+filename.encode()+b"HTTP/1.0\n\n")
-    buffer = fileobj.readlines()
+    # Write response to file
+    with open(filename, 'wb') as f:
+        f.write(response)
 
+    # Close client socket
+    tcpCliSock.close()
 
-    response_file = open(b'./'+filename.encode(), 'w+b')
-    for line in buffer:
-        response_file.write(line)
-        tcpCliSock.send(bytes(line, "utf-8"))
-
-tcpCliSock.close()
+# Close server socket
 tcpSerSock.close()
-c.close()
