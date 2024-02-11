@@ -1,7 +1,8 @@
-from socket import socket, AF_INET, SOCK_STREAM
+# version of Proxy designed to find errors and test proxy without cache, but saves files
+from socket import socket, AF_INET, SOCK_STREAM, gethostbyname
 
 tcpSerSock = socket(AF_INET, SOCK_STREAM)
-tcpSerSock.bind(('', 8887))
+tcpSerSock.bind(('', 8888))
 tcpSerSock.listen(5)
 
 while True:
@@ -21,24 +22,27 @@ while True:
     # Extract filename
     filename = ''
     port = 80
-    try:
+    
+    # handling of filename extraction cases
+    if len(message) != 0:
         if ("http://" in message):
-            filename = message.split()[1].split("/")[3]
+            filename = message.split()[1].split("/")[2]
         elif ("https://" in message):
-            filename = message.split()[1].split("/")[3]
+            filename = message.split()[1].split("/")[2]
         elif "/" in message:
             filename = message.split()[1].split("/")[0]
         else:
             filename = message.split()[1]
-        #this is a test, remove later
+    else:
+        continue
+
+    #this is a test, remove later
+    if ":" in filename:
         port = filename.split(":")[1]
         print("Port:"+port)
         filename = filename.split(":")[0]
-        print('successfully split message')
-    except:
-        print('#Failed to split message')
-        filename = ''
-        continue
+
+
     print('Filename:' + filename)
     port = int(port)
 
@@ -46,16 +50,12 @@ while True:
     c = socket(AF_INET, SOCK_STREAM)
     hostn = filename.replace("www.", "", 1)
     print('Hostname:' + hostn)
-    #c.connect((hostn.encode(), port))
-    #c.send(message.encode())
+    print("Host resolved IP:" + gethostbyname(hostn))
 
-    #test a perfectly reasonable exchange
-    c.connect((hostn,port))
-    c.send(b"GET / HTTP/1.1\r\nHost:https://"+hostn.encode()+b"\r\n\r\n")
 
-    # Formulate and send HTTP request
-    #request = message
-    #c.sendall(request.encode())
+    #connect to site and send get request
+    c.connect((gethostbyname(hostn),443))
+    c.send(b"GET  "+b"https://"+filename.encode()+b" HTTP/1.0\n\n")
 
     # Receive and process HTTP response
     c.settimeout(3)
@@ -65,6 +65,7 @@ while True:
             data = c.recv(1024)
             if not data:
                 break
+            tcpCliSock.send(data)
             response += data
         except:
             print('Timeout occurred...')
@@ -72,9 +73,6 @@ while True:
 
     #print response
     print('Response message:' + response.decode())
-
-    # Send response to client
-    tcpCliSock.sendall(response)
 
     # Write response to file
     with open(filename, 'wb') as f:
