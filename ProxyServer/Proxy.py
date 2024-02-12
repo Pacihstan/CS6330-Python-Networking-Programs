@@ -20,77 +20,96 @@ while True:
         print('#failed to decode message')
         continue
     # Extract the filename from the given message
-    try:
-        print(message.split()[1])
-        filename = str(message.split()[1].replace(':443',''))
-        print('successfully split messsage')
-    except:
-        print('#Failed to split message')
-        filename = ''
+    if len(message) != 0:
+        if("http://" in message):
+            filename = message.split()[1].split("/")[2]
+        elif "/" in message:
+            filename = message.split()[1].split("/")[0]
+        else:
+            filename = message.split[1]
+    else:
+        continue
+
+    # Extract the port from the given message
+    port = 80
+    if ':' in filename:
+        port = filename.split(':')[1]
+        filename = filename.split(":")[0]
+    # Continue if port is not 80
+    if port != 80:
+        print('Not using port 80. Skipping...')
+        continue
+
     print('Filename:' +filename)
     fileExist = "false"
     filetouse = "/" + filename
     print(filetouse)
     try:
         # Check whether the file exist in the cache
-        f = open(filetouse[1:], "r")
+        f = open(filetouse[1:], "rb")
         outputdata = f.readlines()
         fileExist = "true"
         # ProxyServer finds a cache hit and generates a response message
         tcpCliSock.send(b"HTTP/1.0 200 OK\r\n")
         tcpCliSock.send(b"Content-Type:text/html\r\n")
         # Fill in start.
-        
-        #print('outputdata ' + outputdata)
+        # iterate throught 
+        for line in outputdata:
+            tcpCliSock.send(line)
 
 
         # Fill in end.
         print('Read from cache')
     # Error handling for file not found in cache
     except IOError:
-        print('#entered except')
         if fileExist == "false":
-            print('#entered if')
             # Create a socket on the proxyserver
             c = socket(AF_INET, SOCK_STREAM)
-            print('#created socket')
             hostn = filename.replace("www.","",1)
-            print('Hostname: ' + hostn)
+            print('Hostname:' + hostn)
             try:
-                print('#entering main try')
                 # Connect to the socket to port 80
-                c.connect((hostn.encode(),80))
-                print('#connected on port 80')
-                # Create a temporary file on this socket and ask port 80 for the file requested by the client
-                fileobj = c.makefile('wrb', None)
-                print('write = ' + str(b"GET   "+b"http://"+filename.encode()+b"HTTP/1.0\n\n").decode())
-                fileobj.write(b"GET  "+b"http://"+filename.encode()+b"HTTP/1.0\n\n")
-                print('#created temporary file')
-                # Read the response into buffer
-                buffer = fileobj.readlines()
-                print('#read response into buffer')
+                c.connect((gethostbyname(hostn),port))
+            
+
+
+
+                # Send traffic to target host
+                c.sendall(message.encode())
+
+                # Receive HTTP response
+                c.settimeout(10)
+                response = b""
+                while True:
+                    try:
+                        data = c.recv(1024)
+                        if not data:
+                            break
+                        tcpCliSock.send(data)
+                        response += data
+                    except:
+                        print('Timeout occurred...')
+                        break
+
+
 
                 # Create a new file in the cache for the requested file.
                 #start
-                response_file = open(b'./'+filename.encode(), 'w+b') #might have to change this to actually create a file
-                print('#response file created')
-                # Also send the response in the buffer to client socket and the corresponding file in the cache
-                for line in buffer:
-                    response_file.write(line)
-                    tcpCliSock.send(bytes(line, "utf-8"))
-                print('#populated response file and sent')
-                # Fill in start.
-                # Fill in end.
+                with open(b'./'+filename.encode(), 'w+b') as f:
+                    f.write(response)
+                print('Response: ' + response.decode())
+
+
             except:
                 print("Illegal request")
+            #c.close()
         else:
             # HTTP response message for file not found
-            print(placeholder)
+            print("placeholder")
             # Fill in start.
             # Fill in end.
+            #c.close()
     # Close the client and the server sockets
-    #c.close()
-        c.close()
 tcpCliSock.close()
 tcpSerSock.close()
     # Fill in start.
