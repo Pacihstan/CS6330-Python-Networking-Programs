@@ -57,7 +57,6 @@ while True:
         for line in outputdata:
             tcpCliSock.send(line)
 
-
         # Fill in end.
         print('Read from cache')
     # Error handling for file not found in cache
@@ -71,9 +70,6 @@ while True:
                 # Connect to the socket to port 80
                 c.connect((gethostbyname(hostn),port))
             
-
-
-
                 # Send traffic to target host
                 c.sendall(message.encode())
 
@@ -91,26 +87,20 @@ while True:
                         print('Timeout occurred...')
                         break
 
-
-
                 # Create a new file in the cache for the requested file.
-                #start
                 with open(b'./'+filename.encode(), 'w+b') as f:
                     f.write(response)
                 print('Response: ' + response.decode())
 
-
             except:
                 print("Illegal request")
-            #c.close()
         else:
             # HTTP response message for file not found
-            print("placeholder")
             # Fill in start.
-            # Fill in end.
-            #c.close()
+            tcpCliSock.send(b"HTTP/1.0 404 Not Found\r\n") 
+            tcpCliSock.send(b"Content-Type:text/html\r\n")  
+            tcpCliSock.send(b"\r\n")  
+            tcpCliSock.send(b"<html><head></head><body><h1>404 Not Found</h1></body></html>\r\n") 
     # Close the client and the server sockets
 tcpCliSock.close()
 tcpSerSock.close()
-    # Fill in start.
-    # Fill in end
