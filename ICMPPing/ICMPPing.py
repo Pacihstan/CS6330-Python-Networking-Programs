@@ -8,81 +8,28 @@ import binascii
  
 ICMP_ECHO_REQUEST = 8 
 
-
-# my section !
-
 def myChecksumFxn(header, data):
-    print('\n\nbeginning of myChecksumFxn')
-    print('#received header and data:')
-    print(header.hex())
-    print(data.hex())
-    
-    #for loop that iterates through 16 bits at a time
-    # convert hex to integer to binary to integer to hex
-    print('\npacket concat test')
     packet = header + data
-    packet_hex = packet.hex()
-    packet_int = int(packet.hex(), 16)
-    print(hex(packet_int))
-
-    print('\nbinary conversion test')
-    packet_bin = bin(packet_int)
-    print(packet_bin)
-    print('\nbinary trunc test')
-    packet_bin_str = str(packet_bin)
-    trunc_string = packet_bin_str[1:]
-    print(trunc_string)
-
-    print('\nget packet length')
-    print('length:' + str(len(packet.hex())))
-
-
     sum = 0
     for i in range(0, len(packet), 2):
         # create bytes string with current bytes to add to sum
         byte_list = [packet[i], packet[i+1]] # add bytes to list
         current = bytearray(byte_list) # create byte array using list
-        int_current = int(current.hex(), 16) # convert byte array to integer
-        
-        
-        #add to sum
-        sum+= int_current
-        #convert sum to binary
-        binary_sum = bin(sum)
+        int_current = int(current.hex(), 16) # convert byte array to integer 
+        sum+= int_current#add to sum
+        binary_sum = bin(sum)#convert sum to binary
         #check value of sum bits to see if len > 16
         binary_sum_string = str(binary_sum).replace('0b','')
-
-        print('len of binary sum string')
-        print(len(binary_sum_string))
-        if len(binary_sum_string) > 16:
-            print('truncating')
-            #if it is truncate and +1
+        if len(binary_sum_string) > 16:#if it is truncate and +1
             #truncate string
             binary_sum_string = binary_sum_string[1:]
             #convert back to int and add 1
             sum = int(binary_sum_string, 2) + 1
-
-             
-        #print(current.hex())
-        #print(int_current)
-        #print(len(packet))
-        #print(binary_sum_string)
-        #print(len(binary_sum_string))
-
-        print("\n")
-
+ 
     #pad sum with zeroes if len < 16
     binary_sum_string = str(bin(sum)).replace('0b','')
-    print('check if padding required')
-    print(binary_sum_string)
-    print(len(binary_sum_string))
     if len(binary_sum_string) < 16:
-        print('padding with zeroes')
         binary_sum_string = binary_sum_string.zfill(16)
-        print('padded with zeroes')
-        print(binary_sum_string)
-
-
     #create checksum
     #for loop that creates an inverted string version of the final sum and convert back to binary and then to hex
     #create string to represent checksum
@@ -95,11 +42,6 @@ def myChecksumFxn(header, data):
         else:
             print('Invalid value in sum...')
             continue
-    print('final sum')
-    print(binary_sum_string)
-    print('checksum string')
-    print(checksum_string)
-
     #convert to hex
     checksum_hex = ''
     for i in range(0,len(checksum_string), 4):
@@ -107,29 +49,11 @@ def myChecksumFxn(header, data):
         for k in range(4):
             current+=checksum_string[i+k]
         nibble_int = int(current,2)
-        print(current)
-        print(nibble_int)
-        print(hex(nibble_int))
         checksum_hex += str(hex(nibble_int)).replace('0x','')
-        
-
-
-
-    print('\n\n')
-    print(checksum_hex)
     checksum_byte_array = bytearray([int(checksum_hex[0],16), int(checksum_hex[1],16), int(checksum_hex[2],16), int(checksum_hex[3], 16)])
-    #checksum_final = bytes(checksum_byte_array)
     checksum_final = int(checksum_hex, 16)
-    print(checksum_final)
-    print(checksum_hex)
-
-
-
-
-
-    print('end of myChecksumFxn\n\n')
     return(checksum_final)
-# end my section
+
 
 def checksum(string):  
     csum = 0 
@@ -153,6 +77,7 @@ def checksum(string):
     answer = answer & 0xffff  
     answer = answer >> 8 | (answer << 8 & 0xff00) 
     return answer 
+
 def receiveOnePing(mySocket, ID, timeout, destAddr):
     timeLeft = timeout 
  	 
