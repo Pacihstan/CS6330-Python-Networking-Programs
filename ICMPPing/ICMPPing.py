@@ -28,6 +28,10 @@ def myChecksumFxn(header, data):
     print('\nbinary conversion test')
     packet_bin = bin(packet_int)
     print(packet_bin)
+    print('\nbinary trunc test')
+    packet_bin_str = str(packet_bin)
+    trunc_string = packet_bin_str[1:]
+    print(trunc_string)
 
     print('\nget packet length')
     print('length:' + str(len(packet.hex())))
@@ -39,15 +43,39 @@ def myChecksumFxn(header, data):
         byte_list = [packet[i], packet[i+1]] # add bytes to list
         current = bytearray(byte_list) # create byte array using list
         int_current = int(current.hex(), 16) # convert byte array to integer
-        sum += int_current # add converted byte value to sum
-        #check value of sum a bits to see if len > 16
-        #if it is truncate and +1
+        
+        
+        #add to sum
+        sum+= int_current
+        #convert sum to binary
+        binary_sum = bin(sum)
+        #check value of sum bits to see if len > 16
+        binary_sum_string = str(binary_sum).replace('0b','')
+        if len(binary_sum_string) > 16:
+            print('truncating')
+            #if it is truncate and +1
+            #truncate string
+            print(binary_sum_string)
+            binary_sum_string = binary_sum_string[1:]
+            #convert back to int and add 1
+            sum = int(binary_sum_string, 2) + 1
+            
+            
+
+
+
         print(current.hex())
         print(int_current)
         #print(len(packet))
-        print(sum)
+        print(binary_sum_string)
+        print(len(binary_sum_string))
 
         print("\n")
+
+    #create checksum
+    binary_sum_string = str(bin(sum))
+    #for loop that creates an inverted string version of the final sum and convert back to binary and then to hex
+
 
 
 
