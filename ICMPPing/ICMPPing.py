@@ -51,36 +51,74 @@ def myChecksumFxn(header, data):
         binary_sum = bin(sum)
         #check value of sum bits to see if len > 16
         binary_sum_string = str(binary_sum).replace('0b','')
+
+        print('len of binary sum string')
+        print(len(binary_sum_string))
         if len(binary_sum_string) > 16:
             print('truncating')
             #if it is truncate and +1
             #truncate string
-            print(binary_sum_string)
             binary_sum_string = binary_sum_string[1:]
             #convert back to int and add 1
             sum = int(binary_sum_string, 2) + 1
-            
-            
 
-
-
-        print(current.hex())
-        print(int_current)
+             
+        #print(current.hex())
+        #print(int_current)
         #print(len(packet))
-        print(binary_sum_string)
-        print(len(binary_sum_string))
+        #print(binary_sum_string)
+        #print(len(binary_sum_string))
 
         print("\n")
 
+    #pad sum with zeroes if len < 16
+    binary_sum_string = str(bin(sum)).replace('0b','')
+    print('check if padding required')
+    print(binary_sum_string)
+    print(len(binary_sum_string))
+    if len(binary_sum_string) < 16:
+        print('padding with zeroes')
+        binary_sum_string = binary_sum_string.zfill(16)
+        print('padded with zeroes')
+        print(binary_sum_string)
+
+
     #create checksum
-    binary_sum_string = str(bin(sum))
     #for loop that creates an inverted string version of the final sum and convert back to binary and then to hex
+    #create string to represent checksum
+    checksum_string = ''
+    for k in range(len(binary_sum_string)):
+        if binary_sum_string[k] == '0':
+            checksum_string+='1'
+        elif binary_sum_string[k] == '1':
+            checksum_string+='0'
+        else:
+            print('Invalid value in sum...')
+            continue
+    print('final sum')
+    print(binary_sum_string)
+    print('checksum string')
+    print(checksum_string)
+
+    #convert to hex
+    checksum_hex = ''
+    for i in range(0,len(checksum_string), 4):
+        current = ''
+        for k in range(4):
+            current+=checksum_string[i+k]
+        nibble_int = int(current,2)
+        print(current)
+        print(nibble_int)
+        print(hex(nibble_int))
+        checksum_hex += str(hex(nibble_int)).replace('0x','')
+        
 
 
 
 
-
+    print(checksum_hex)
     print('end of myChecksumFxn\n\n')
+    return(checksum_hex)
 # end my section
 
 def checksum(string):  
