@@ -115,10 +115,20 @@ def myChecksumFxn(header, data):
 
 
 
-
+    print('\n\n')
     print(checksum_hex)
+    checksum_byte_array = bytearray([int(checksum_hex[0],16), int(checksum_hex[1],16), int(checksum_hex[2],16), int(checksum_hex[3], 16)])
+    #checksum_final = bytes(checksum_byte_array)
+    checksum_final = int(checksum_hex, 16)
+    print(checksum_final)
+    print(checksum_hex)
+
+
+
+
+
     print('end of myChecksumFxn\n\n')
-    return(checksum_hex)
+    return(checksum_final)
 # end my section
 
 def checksum(string):  
@@ -174,11 +184,12 @@ def sendOnePing(mySocket, destAddr, ID):
     header = struct.pack("bbHHh", ICMP_ECHO_REQUEST, 0, myChecksum, ID, 1) 
     data = struct.pack("d", time.time()) 
  	# Calculate the checksum on the data and the dummy header.
-    myChecksum = checksum(str(header + data))
+    #myChecksum = checksum(str(header + data))
     #test code section
-    myChecksumFxn(header, data)
+    myChecksum = myChecksumFxn(header, data)
     print('pre-system check checksum:')
-    print(hex(myChecksum))
+    #print(myChecksum.hex())
+    print(myChecksum)
  	 
  	# Get the right checksum, and put in the header  	
     if sys.platform == 'darwin':
