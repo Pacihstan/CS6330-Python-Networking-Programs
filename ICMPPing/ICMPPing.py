@@ -92,13 +92,26 @@ def receiveOnePing(mySocket, ID, timeout, destAddr):
         
         #Fill in start 
      
-        #Fetch the ICMP header from the IP packet 
-        print("print after receive")
+        #Fetch the ICMP header from the IP packet
+        ICMP_type = recPacket[20]
+        ICMP_code = recPacket[21]
+        ICMP_checksum = recPacket[22:24].hex()
+        ICMP_identifier = int(recPacket[24:26].hex(), 16)
+        ICMP_seq = int(recPacket[26:28].hex(), 16)
+        ttl = recPacket[8] 
+        
+
+        print('reply from ' + str(addr[0]) + ': icmp_seq=' + str(ICMP_seq) + ' ttl=' + str(ttl),end='')
+        #ICMP starts at index 20
+        #for k in range(0,len(recPacket),1):
+            #print(str(k) + ':' + str(hex(recPacket[k])))
+
     
         #Fill in end  	 	
         timeLeft = timeLeft - howLongInSelect  	 	
         if timeLeft <= 0: 
             return "Request timed out." 
+        else: return howLongInSelect
  	 
 def sendOnePing(mySocket, destAddr, ID):
     # Header is type (8), code (8), checksum (16), id (16), sequence (16) 
@@ -109,28 +122,17 @@ def sendOnePing(mySocket, destAddr, ID):
     header = struct.pack("bbHHh", ICMP_ECHO_REQUEST, 0, myChecksum, ID, 1) 
     data = struct.pack("d", time.time()) 
  	# Calculate the checksum on the data and the dummy header.
-    #myChecksum = checksum(str(header + data))
-    #test code section
     myChecksum = myChecksumFxn(header, data)
-    print('pre-system check checksum:')
-    #print(myChecksum.hex())
-    print(myChecksum)
- 	 
+     	 
  	# Get the right checksum, and put in the header  	
     if sys.platform == 'darwin':
       # Convert 16-bit integers from host to network  byte order  	 	
       myChecksum = htons(myChecksum) & 0xffff
     else:
         myChecksum = htons(myChecksum)
-    print('post-system check checksum:')
-    print(hex(myChecksum).encode())
- 	 	 
+     	 	 
     header = struct.pack("bbHHh", ICMP_ECHO_REQUEST, 0, myChecksum, ID, 1)  	
     packet = header + data 
-    #print('#print out packet as hex:')
-    #print(header.hex())
-   # print(data.hex())
-    #print('end datagram')
 
     mySocket.sendto(packet, (destAddr, 1)) # AF_INET address must be tuple, not str 
  	# Both LISTS and TUPLES consist of a number of objects 
@@ -150,16 +152,16 @@ def ping(host, timeout=1):
  	# timeout=1 means: If one second goes by without a reply from the server,
     # the client assumes that either the client's ping or the server's pong is lost  	
     dest = gethostbyname(host)  	
-    #print("Pinging " + dest + " using Python:")
-    #print("") 
+    print("Pinging " + dest + " using Python:")
+    print("") 
  	# Send ping requests to a server separated by approximately one second
     while 1 :
         delay = doOnePing(dest, timeout) 
-        print(delay) 
+        print(' time=' + str(delay*1000)+ ' ms') 
         time.sleep(1)# one second  	
-        return delay 
+        #return delay 
 
-ping("google.com")
+ping(sys.argv[1])
 
 
 
