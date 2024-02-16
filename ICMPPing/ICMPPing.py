@@ -31,7 +31,6 @@ def myChecksumFxn(header, data):
     if len(binary_sum_string) < 16:
         binary_sum_string = binary_sum_string.zfill(16)
     #create checksum
-    #for loop that creates an inverted string version of the final sum and convert back to binary and then to hex
     #create string to represent checksum
     checksum_string = ''
     for k in range(len(binary_sum_string)):
@@ -54,13 +53,11 @@ def myChecksumFxn(header, data):
     checksum_final = int(checksum_hex, 16)
     return(checksum_final)
 
-
 def checksum(string):  
     csum = 0 
     countTo = (len(string) // 2) * 2   
     count = 0 
 	
-
     while count < countTo: 
         thisVal = ord(string[count+1]) * 256 + ord(string[count])   	 	
         csum = csum + thisVal   	 	
@@ -89,24 +86,15 @@ def receiveOnePing(mySocket, ID, timeout, destAddr):
             return "Request timed out." 
         timeReceived = time.time()   	 	
         recPacket, addr = mySocket.recvfrom(1024) 
-        
-        #Fill in start 
-     
         #Fetch the ICMP header from the IP packet
+	# In retrospect, this should have been done with struct.unpack 
         ICMP_type = recPacket[20]
         ICMP_code = recPacket[21]
         ICMP_checksum = recPacket[22:24].hex()
         ICMP_identifier = int(recPacket[24:26].hex(), 16)
         ICMP_seq = int(recPacket[26:28].hex(), 16)
         ttl = recPacket[8] 
-        
-
-        print('reply from ' + str(addr[0]) + ': icmp_seq=' + str(ICMP_seq) + ' ttl=' + str(ttl),end='')
-        #ICMP starts at index 20
-        #for k in range(0,len(recPacket),1):
-            #print(str(k) + ':' + str(hex(recPacket[k])))
-
-    
+        print('reply from ' + str(addr[0]) + ': icmp_seq=' + str(ICMP_seq) + ' ttl=' + str(ttl),end='') 
         #Fill in end  	 	
         timeLeft = timeLeft - howLongInSelect  	 	
         if timeLeft <= 0: 
