@@ -52,12 +52,9 @@ while True:
         # ProxyServer finds a cache hit and generates a response message
         tcpCliSock.send(b"HTTP/1.0 200 OK\r\n")
         tcpCliSock.send(b"Content-Type:text/html\r\n")
-        # Fill in start.
-        # iterate throught 
+        # iterate through
         for line in outputdata:
             tcpCliSock.send(line)
-
-        # Fill in end.
         print('Read from cache')
     # Error handling for file not found in cache
     except IOError:
